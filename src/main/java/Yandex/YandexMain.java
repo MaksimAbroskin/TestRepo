@@ -12,7 +12,7 @@ public class YandexMain {
 
         String[] names = {"company", "compan", "compa", "comp", "com", "co", "c"};
         List<String> companyNames = new ArrayList<>(Arrays.asList(names));
-        SuggestService suggestService = new SuggestService(companyNames);
+        SuggestService suggestService = new SuggestServiceJavaImpl(companyNames);
 
         while (scanner.hasNext()) {
             input.append(scanner.next(".").charAt(0));

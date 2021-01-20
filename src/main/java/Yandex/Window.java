@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class Window extends JFrame {
     String[] names = {"company", "compan", "compa", "comp", "com", "co", "c", "ax", "axel", "akel", "aka", "aka47"};
-    SuggestService suggestService = new SuggestService(Arrays.asList(names));
+    SuggestServiceJavaImpl suggestService = new SuggestServiceJavaImpl(Arrays.asList(names));
 
     public Window() throws HeadlessException {
         super("Suggester");
