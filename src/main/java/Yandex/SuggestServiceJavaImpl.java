@@ -20,6 +20,7 @@ public class SuggestServiceJavaImpl implements SuggestService {
     }
 
     public List<String> suggest(String input, Integer numberOfSuggest) {
-        return map.getOrDefault(input, new ArrayList<>()).subList(0, numberOfSuggest - 1);
+        ArrayList<String> fullResult = map.getOrDefault(input, new ArrayList<>());
+        return fullResult.subList(0, Math.min(fullResult.size(), numberOfSuggest));
     }
 }
