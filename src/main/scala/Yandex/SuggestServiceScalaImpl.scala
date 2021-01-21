@@ -17,36 +17,26 @@ class SuggestServiceScalaImpl(companyNames: util.List[String])
 
   while (names.nonEmpty) {
     @tailrec
-    def loop(names: mutable.SortedSet[String], diff: Set[String]): Set[String] = {
-      if (names.isEmpty) diff
+    def loop(names: mutable.SortedSet[String], acc: Set[String]): Set[String] = {
+      if (names.isEmpty) acc
       else {
         val name = names.head
         val key = name.take(len)
         val (toAdd, toProcess) = names.partition(_.startsWith(key))
-        val newDiff =
+        val newAcc =
           if
-            (toAdd.size == 1) diff + name
-          else if (toAdd.contains(key)) diff + key
-          else diff
+            (toAdd.size == 1) acc + name
+          else if (toAdd.contains(key)) acc + key
+          else acc
         namesMap.updateWith(key) {
           case Some(namesSet) => Some(namesSet ++ toAdd)
           case None           => Some(toAdd)
         }
-        loop(toProcess, newDiff)
-      }
-    }
-
-    def addKeys(keys: Set[String]): Unit = {
-      keys.foreach { name =>
-        (1 to name.length).foreach { len =>
-          val key = name.take(len)
-          namesMap.getOrElseUpdate(key, SortedSet(name))
-        }
+        loop(toProcess, newAcc)
       }
     }
 
     val diff: Set[String] = loop(names, Set.empty)
-    addKeys(diff)
     names.subtractAll(diff)
     len += 1
   }
