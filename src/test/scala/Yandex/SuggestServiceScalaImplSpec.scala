@@ -19,4 +19,18 @@ class SuggestServiceScalaImplSpec extends FunSuite {
     )
     assert(new SuggestServiceScalaImpl(names.asJava).getNamesMap == expectedMap)
   }
+  test("2") {
+    val names = List("company")
+    val namesSet = SortedSet("company")
+    val expectedMap = Map(
+      "c" -> namesSet,
+      "co" ->  namesSet,
+      "com" ->  namesSet,
+      "comp" ->  namesSet,
+      "compa" ->  namesSet,
+      "compan" ->  namesSet,
+      "company" ->  namesSet
+    )
+    assert(new SuggestServiceScalaImpl(names.asJava).getNamesMap == expectedMap)
+  }
 }

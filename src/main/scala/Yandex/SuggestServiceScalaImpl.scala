@@ -36,7 +36,17 @@ class SuggestServiceScalaImpl(companyNames: util.List[String])
       }
     }
 
-    val diff = loop(names, Set.empty)
+    def addKeys(keys: Set[String]): Unit = {
+      keys.foreach { name =>
+        (1 to name.length).foreach { len =>
+          val key = name.take(len)
+          namesMap.getOrElseUpdate(key, SortedSet(name))
+        }
+      }
+    }
+
+    val diff: Set[String] = loop(names, Set.empty)
+    addKeys(diff)
     names.subtractAll(diff)
     len += 1
   }
