@@ -1,17 +1,15 @@
 package Yandex;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class SuggestService {
-    HashMap<String, HashSet<String>> map = new HashMap<>();
-    HashMap<Pattern, String> patternMap = new HashMap<>();
+    public HashMap<String, HashSet<String>> map = new HashMap<>();
     ArrayList<String> sortedCompanyNames;
 
     public SuggestService(List<String> companyNames) {
         sortedCompanyNames = new ArrayList<>(companyNames);
-        Collections.sort(sortedCompanyNames);
         sortedCompanyNames.replaceAll(String::toLowerCase);
+        Collections.sort(sortedCompanyNames);
 
         outloop:
         for (int i = 0; i < sortedCompanyNames.size(); i++) {
@@ -19,9 +17,7 @@ public class SuggestService {
             for (int j = 1; j <= company.length(); j++) {
                 String key = company.substring(0, j);
                 if (!map.containsKey(key)) {
-                    HashSet<String> set = new HashSet<>();
-                    set.add(company);
-                    map.put(key, set);
+                    map.put(key, new HashSet<>(Collections.singletonList(company)));
                 } else {
                     continue;
                 }
@@ -34,9 +30,7 @@ public class SuggestService {
                         break;
                     }
                 }
-                if (map.get(company.substring(0, j)).size() == 1 && j < company.length()) {
-                    patternMap.put(Pattern.compile(company.substring(0, j) + ".+"), company);
-                    map.remove(company.substring(0, j));
+                if (map.get(key).size() == 1 && j < company.length()) {
                     continue outloop;
                 }
             }
@@ -45,25 +39,23 @@ public class SuggestService {
 
     public List<String> suggest(String input, Integer numberOfSuggest) {
         String lowerCaseInput = input.toLowerCase();
-        ArrayList<String> result = new ArrayList<>(numberOfSuggest);
-        int count = 0;
-        if (map.containsKey(lowerCaseInput)) {
-            for (String s : map.get(lowerCaseInput)) {
-                result.add(s);
-                count++;
-                if (count >= numberOfSuggest) {
-                    break;
-                }
-            }
-        } else {
-            Pattern pattern = Pattern.compile(lowerCaseInput + ".+");
-            for (Pattern p : patternMap.keySet()) {
-                if (p.pattern().equals(pattern.pattern())) {
-                    result.add(patternMap.get(p));
-                    break;
+        ArrayList<String> result = new ArrayList<>(map.getOrDefault(lowerCaseInput, ifNotContains(lowerCaseInput)));
+        return result.subList(0, Math.min(result.size(), numberOfSuggest));
+    }
+
+    public HashSet<String> ifNotContains(String in) { // for memory optimization
+        for (int i = 1; i < in.length(); i++) {
+            String key = in.substring(0, i);
+            if (!map.containsKey(key)) {
+                break;
+            } else if (map.containsKey(key) && map.get(key).size() == 1) {
+                for (String s : map.get(key)) {
+                    if (s.matches(in + ".*")) {
+                        return map.get(key);
+                    }
                 }
             }
         }
-        return result;
+        return new HashSet<>();
     }
 }
