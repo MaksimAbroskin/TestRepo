@@ -5,8 +5,7 @@ import scala.annotation.tailrec
 import scala.collection.{SortedSet, mutable}
 import scala.jdk.CollectionConverters._
 
-class SuggestServiceScalaImpl(companyNames: util.List[String])
-    extends SuggestService {
+class SuggestServiceScalaImpl(companyNames: util.List[String]) {
 
   private val names =
     companyNames.asScala.to(collection.mutable.SortedSet).map(_.toLowerCase)
