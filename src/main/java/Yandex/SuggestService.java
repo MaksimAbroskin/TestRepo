@@ -3,47 +3,46 @@ package Yandex;
 import java.util.*;
 
 public class SuggestService {
-    public HashMap<String, HashSet<String>> map = new HashMap<>();
-    ArrayList<String> sortedCompanyNames;
+    private final HashMap<String, TreeSet<String>> map = new HashMap<>();
 
     public SuggestService(List<String> companyNames) {
-        sortedCompanyNames = new ArrayList<>(companyNames);
-        sortedCompanyNames.replaceAll(String::toLowerCase);
-        Collections.sort(sortedCompanyNames);
 
-        outloop:
-        for (int i = 0; i < sortedCompanyNames.size(); i++) {
-            String company = sortedCompanyNames.get(i);
-            for (int j = 1; j <= company.length(); j++) {
-                String key = company.substring(0, j);
-                if (!map.containsKey(key)) {
-                    map.put(key, new HashSet<>(Collections.singletonList(company)));
-                } else {
-                    continue;
-                }
-                for (int k = i + 1; k < sortedCompanyNames.size(); k++) {
-                    if (sortedCompanyNames.get(k).startsWith(key)) {
-                        HashSet<String> set = map.get(key);
-                        set.add(sortedCompanyNames.get(k));
-                        map.put(key, set);
-                    } else {
-                        break;
-                    }
-                }
-                if (map.get(key).size() == 1 && j < company.length()) {
-                    continue outloop;
-                }
+        companyNames.replaceAll(String::toLowerCase);
+        Set<String> companyNamesSet = new HashSet<>(companyNames);
+        int len = 1;
+
+        while(!companyNamesSet.isEmpty()) {
+
+            HashSet<String> names = new HashSet<>(companyNamesSet);
+            Set<String> diff = new HashSet<>();
+
+            while (!names.isEmpty()) {
+                String name = names.iterator().next();
+                String key = name.substring(0, Math.min(name.length(), len));
+
+                TreeSet<String> toAdd = new TreeSet<>(names);
+                toAdd.removeIf(n -> !n.startsWith(key));
+
+                if (toAdd.size() == 1) diff.add(name);
+                else if (toAdd.contains(key)) diff.add(key);
+
+                map.merge(key, toAdd, (x, y) -> {x.addAll(y); return x;});
+
+                names.removeAll(toAdd);
             }
+
+            companyNamesSet.removeAll(diff);
+            len++;
         }
     }
 
     public List<String> suggest(String input, Integer numberOfSuggest) {
         String lowerCaseInput = input.toLowerCase();
-        ArrayList<String> result = new ArrayList<>(map.getOrDefault(lowerCaseInput, ifNotContains(lowerCaseInput)));
+        List<String> result = new ArrayList<>(map.getOrDefault(lowerCaseInput, ifNotContains(lowerCaseInput)));
         return result.subList(0, Math.min(result.size(), numberOfSuggest));
     }
 
-    public HashSet<String> ifNotContains(String in) { // for memory optimization
+    private TreeSet<String> ifNotContains(String in) { // for memory optimization
         for (int i = 1; i < in.length(); i++) {
             String key = in.substring(0, i);
             if (!map.containsKey(key)) {
@@ -56,6 +55,6 @@ public class SuggestService {
                 }
             }
         }
-        return new HashSet<>();
+        return new TreeSet<>();
     }
 }
